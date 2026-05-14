@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Minerva di Arezzo - Analisi visuale</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #f4f1ea;
+    color: #222;
+    margin: 0;
+    padding: 30px 20px;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 30px;
+  }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 4px;
+    color: #1a3a5c;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* Sidebar - Carta d'identità */
+  .id-card {
+    background: #1a3a5c;
+    color: #fff;
+    padding: 18px;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .id-card h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 8px;
+    margin: 0 0 12px;
+  }
+  .id-card dt { font-weight: bold; color: #f0c040; margin-top: 8px; }
+  .id-card dd { margin: 2px 0 0; }
+
+  /* Container immagine + hotspot */
+  .image-wrap {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+  }
+  .image-wrap img {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    display: block;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  .stage {
+    text-align: center;
+  }
+
+  /* Hotspot stile ThingLink */
+  .hotspot {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #1e88e5;
+    color: white;
+    font-family: system-ui, sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s, background 0.2s, opacity 0.25s;
+    z-index: 2;
+    animation: pulse 2s infinite;
+  }
+  .hotspot:hover {
+    background: #f0c040;
+    color: #1a3a5c;
+    transform: translate(-50%, -50%) scale(1.4);
+    animation: none;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 0 rgba(30,136,229,0.6); }
+    50%      { box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 7px rgba(30,136,229,0); }
+  }
+  .hidden-dots .hotspot { opacity: 0; pointer-events: none; }
+
+  /* Switch toggle */
+  .toggle-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 4px;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    color: #555;
+  }
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #ccc; border-radius: 24px; transition: 0.2s;
+  }
+  .slider:before {
+    content: ""; position: absolute;
+    height: 18px; width: 18px; left: 3px; top: 3px;
+    background: #fff; border-radius: 50%; transition: 0.2s;
+  }
+  .switch input:checked + .slider { background: #1e88e5; }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
+
+  /* Modal popup */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 8px;
+    max-width: 480px;
+    width: 90%;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    animation: pop 0.2s ease-out;
+  }
+  @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-head {
+    background: #1a3a5c;
+    color: #fff;
+    padding: 14px 50px 14px 18px;
+    position: relative;
+  }
+  .modal-head .num {
+    background: #f0c040;
+    color: #1a3a5c;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+    font-family: system-ui, sans-serif;
+  }
+  .modal-head .title {
+    font-size: 18px;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .modal-close {
+    position: absolute; top: 8px; right: 12px;
+    cursor: pointer; color: #fff;
+    font-size: 24px;
+    background: none; border: none;
+  }
+  .modal-body {
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333;
+  }
+  .modal-body .tag {
+    display: inline-block;
+    background: #eef3f8;
+    color: #1a3a5c;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .instructions {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    margin-top: 12px;
+    font-family: system-ui, sans-serif;
+  }
+
+  @media (max-width: 720px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Sezioni sotto ===== */
+  .section-title {
+    margin-top: 40px;
+    padding-bottom: 6px;
+    border-bottom: 3px solid #f0c040;
+    color: #1a3a5c;
+    font-size: 22px;
+  }
+  .body-section h3 {
+    color: #1a3a5c;
+    margin-top: 22px;
+    margin-bottom: 6px;
+    font-size: 17px;
+  }
+  .body-section p {
+    line-height: 1.65;
+    text-align: justify;
+    margin: 0 0 12px;
+  }
+
+  /* Podcast card */
+  .podcast-card {
+    display: flex;
+    gap: 18px;
+    background: linear-gradient(135deg, #1a3a5c, #2c5a8a);
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    align-items: center;
+  }
+  .podcast-cover {
+    width: 90px; height: 90px;
+    background: #f0c040;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    flex-shrink: 0;
+  }
+  .podcast-body { flex: 1; font-family: system-ui, sans-serif; }
+  .podcast-title { font-size: 17px; font-weight: bold; }
+  .podcast-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .qr-note { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+
+  /* Quiz */
+  .quiz-section {
+    background: #f9f7f1;
+    padding: 8px 24px 24px;
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+  .quiz-q {
+    background: #fff;
+    border-left: 4px solid #f0c040;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+  }
+  .quiz-q .q-text { font-weight: bold; color: #1a3a5c; margin-bottom: 10px; }
+  .quiz-q label {
+    display: block;
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: #f4f1ea;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+  .quiz-q label:hover { background: #ece7d8; }
+  .quiz-q label.correct { background: #d4edda; border-left: 3px solid #28a745; }
+  .quiz-q label.wrong   { background: #f8d7da; border-left: 3px solid #dc3545; }
+  .quiz-q input[type="radio"] { margin-right: 8px; }
+  .quiz-btn {
+    background: #1a3a5c; color: #fff;
+    border: none; padding: 10px 24px;
+    border-radius: 6px; cursor: pointer;
+    font-family: system-ui, sans-serif; font-size: 14px;
+    margin-top: 8px;
+  }
+  .quiz-btn:hover { background: #2c5a8a; }
+  #quizResult {
+    margin-top: 14px; padding: 12px;
+    border-radius: 6px;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+  }
+  #quizResult.show { display: block; }
+
+  .page-footer {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid #e0d8c0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <h1>La Minerva di Arezzo</h1>
+  <div class="subtitle">Focus: L'ideale di bellezza e la copia — GRUPPO 4</div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR: Carta d'Identità -->
+    <aside class="id-card">
+      <h2>Carta d'identità</h2>
+      <dl>
+        <dt>Titolo</dt><dd>Minerva di Arezzo</dd>
+        <dt>Datazione</dt><dd>primi decenni III sec. a.C. (ellenistica, 300-270 a.C. ca.)</dd>
+        <dt>Materiale</dt><dd>Bronzo (fusione a cera persa), con dettagli in rame</dd>
+        <dt>Dimensioni</dt><dd>h. ca. 155 cm (sotto il vero)</dd>
+        <dt>Ritrovamento</dt><dd>Arezzo, 1541, presso chiesa di San Lorenzo</dd>
+        <dt>Collocazione</dt><dd>Museo Archeologico Nazionale di Firenze</dd>
+        <dt>Restauri</dt><dd>XVIII sec. (Carradori); 2000-2008 (riportata all'antico)</dd>
+      </dl>
+    </aside>
+
+    <!-- IMMAGINE CON HOTSPOT -->
+    <div class="stage">
+      <div class="image-wrap" id="wrap">
+        <img src="minerva.jpeg" alt="Minerva di Arezzo" id="img">
+        <!-- gli hotspot vengono iniettati via JS -->
+      </div>
+      <div class="toggle-row">
+        <span>Hotspot</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleDots" checked>
+          <span class="slider"></span>
+        </label>
+        <span id="toggleLabel">visibili</span>
+      </div>
+      <div class="instructions">Clicca i pallini numerati per esplorare l'opera</div>
+    </div>
+
+  </div>
+
+  <!-- ============= CORPO CENTRALE ============= -->
+  <section class="body-section">
+    <h2 class="section-title">Descrizione</h2>
+
+    <h3>Soggetto</h3>
+    <p>La statua rappresenta <strong>Atena/Minerva</strong>, dea della sapienza e della guerra. È in piedi, in posa pacata: indossa l'<em>elmo corinzio</em> rialzato sulla fronte, l'<em>egida</em> sul petto con il <em>gorgoneion</em> (la testa di Medusa) al centro, un lungo chitone a pieghe verticali e l'<em>himation</em> (mantello) annodato sul fianco. Ai piedi calza sandali alti.</p>
+
+    <h3>Stile</h3>
+    <p>Realizzata nei primi decenni del <strong>III secolo a.C.</strong>, è una replica o rielaborazione di un originale greco di ambito ellenistico. Vi convivono due anime: il <em>panneggio bagnato</em> di gusto classico greco (V-IV sec.) e una resa più rigida e decorativa delle pieghe, tipica della bronzistica etrusco-italica. Tecnica della <strong>fusione a cera persa</strong>, con dettagli in <strong>rame</strong> per labbra e ciglia, e occhi originariamente in pasta vitrea.</p>
+
+    <h3>Storia e contesto</h3>
+    <p>Rinvenuta ad <strong>Arezzo nel 1541</strong>, presso la chiesa di San Lorenzo, dentro i resti di una domus romana del I secolo d.C. dove fungeva da arredo di lusso. Subito acquisita da <strong>Cosimo I de' Medici</strong>, che la collocò nello Studiolo di Calliope a Palazzo Vecchio. Successivamente passa alla Galleria degli Uffizi e infine al Museo Archeologico Nazionale di Firenze, dove è oggi conservata.</p>
+
+    <h3>Il "giallo" del braccio destro</h3>
+    <p>Quando fu trovata, alla statua mancava il braccio destro. Nel '700 lo scultore <strong>Francesco Carradori</strong> ne inventò uno, teso in avanti con la mano aperta. Mancavano però confronti antichi: era una sua interpretazione personale. Il restauro del <strong>2000-2008</strong> ha rimosso il braccio settecentesco riportando la statua all'aspetto autentico. Le parti mancanti del panneggio sono state integrate in alluminio applicato con calamite — un restauro <em>reversibile</em>: se domani si trovasse un frammento originale, potrebbe essere rimesso al suo posto.</p>
+  </section>
+
+  <!-- ============= SEZIONE MULTIMEDIA ============= -->
+  <section class="media-section">
+    <h2 class="section-title">Audioguida — Podcast</h2>
+    <div class="podcast-card">
+      <div class="podcast-cover">🎙️</div>
+      <div class="podcast-body">
+        <div class="podcast-title">Minerva di Arezzo: il giallo del braccio scomparso</div>
+        <div class="podcast-sub">Dialogo giornalista–critico d'arte · ca. 5 minuti</div>
+        <audio controls preload="none" style="width:100%; margin-top:10px;">
+          <source src="podcast_minerva.mp3" type="audio/mpeg">
+          [Audio da registrare — vedi <code>podcast_minerva.md</code> per lo script]
+        </audio>
+        <div class="qr-note">📱 Scansiona il QR Code vicino alla statua per ascoltare</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============= QUIZ ============= -->
+  <section class="quiz-section">
+    <h2 class="section-title">Hai capito tutto? · Mini-Quiz</h2>
+    <div id="quizContainer"></div>
+    <div id="quizResult"></div>
+  </section>
+
+  <footer class="page-footer">
+    Pagina realizzata dal <strong>GRUPPO 4</strong> · Liceo Rodolico Firenze · a.s. 2025/26<br>
+    Progetto: nuovo sito MAF — Museo Archeologico Nazionale di Firenze
+  </footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="num" id="modalNum"></span>
+      <span class="title" id="modalTitle"></span>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tag" id="modalTag"></div>
+      <div id="modalText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIG HOTSPOT
+  //   x, y = posizione in % sull'immagine (0-100)
+  //   tag  = categoria (Soggetto / Stile / Tecnica / Storia ...)
+  //   titolo, testo = contenuto del popup
+  // ============================================================
+  const HOTSPOTS = [
+    {
+      x: 50, y: 5,
+      tag: "Iconografia",
+      titolo: "Elmo corinzio rialzato",
+      testo: "Indossa l'elmo corinzio sollevato sulla fronte (tipico di Atena/Minerva 'pacificata'), decorato in origine con una civetta e un piccolo serpente — entrambi attributi della dea della sapienza."
+    },
+    {
+      x: 49, y: 13,
+      tag: "Tecnica",
+      titolo: "Volto: dettagli in rame",
+      testo: "Le labbra e i contorni delle ciglia sono realizzati in RAME, intarsiato nel bronzo per creare un contrasto cromatico naturalistico. Gli occhi (oggi vuoti) erano riempiti con paste vitree o pietre dure colorate."
+    },
+    {
+      x: 45, y: 26,
+      tag: "Attributo",
+      titolo: "Gorgoneion sull'egida",
+      testo: "Sul petto, al centro dell'egida, c'è la testa mozzata di Medusa: il Gorgoneion. Volto schiacciato, guance piene, capelli-serpenti — simbolo apotropaico che 'pietrifica' i nemici. Mito: Perseo decapita Medusa e dona la testa ad Atena."
+    },
+    {
+      x: 43, y: 31,
+      tag: "Attributo",
+      titolo: "Egida con squame di serpente",
+      testo: "L'egida è la mantellina sacra di Atena: dono di Zeus alla figlia. Superficie a squame di serpente, bordata da serpentelli. Scudo-pettorale magico che incute terrore in battaglia."
+    },
+    {
+      x: 32, y: 28,
+      tag: "Iconografia",
+      titolo: "Protome sulla spalla",
+      testo: "Sulla spalla sinistra è visibile una piccola figura applicata (probabilmente una protome animale): dettaglio decorativo tipico delle armature di parata greco-ellenistiche."
+    },
+    {
+      x: 62, y: 30,
+      tag: "Restauro",
+      titolo: "Il braccio MANCANTE (giallo storico!)",
+      testo: "Qui vedi solo il moncherino. Nel '700 lo scultore Francesco Carradori INVENTÒ un braccio destro teso in avanti, senza nessun confronto iconografico antico. Il restauro 2000-2008 lo ha RIMOSSO: meglio una statua autentica e monca che una statua 'completa' ma falsa."
+    },
+    {
+      x: 55, y: 41,
+      tag: "Abbigliamento",
+      titolo: "Nodo dell'himation",
+      testo: "Il mantello (himation) è annodato sul fianco, creando un gioco di volumi pesanti contro il chitone leggero sottostante. Virtuosismo del bronzista nella resa di tessuti diversi."
+    },
+    {
+      x: 42, y: 50,
+      tag: "Stile",
+      titolo: "Panneggio 'bagnato'",
+      testo: "Le pieghe della veste cadono dritte ma aderiscono al corpo, lasciando intravedere le forme: è lo stilema del 'panneggio bagnato' della scultura greca classica (V-IV sec. a.C.)."
+    },
+    {
+      x: 33, y: 53,
+      tag: "Restauro",
+      titolo: "Integrazioni in alluminio",
+      testo: "Le aree color crema chiaro che vedi sul panneggio NON sono bronzo: sono integrazioni in ALLUMINIO applicate con calamite durante il restauro 2000-2008. Completamente reversibili: se domani si scoprisse un frammento originale, si toglierebbero senza danno."
+    },
+    {
+      x: 50, y: 80,
+      tag: "Abbigliamento",
+      titolo: "Chitone a pieghe verticali",
+      testo: "Sotto l'himation si vede il chitone lungo (peplo) a fittissime pieghe verticali che scendono come scanalature di una colonna: tratto di gusto severo greco reinterpretato in chiave ellenistica."
+    },
+    {
+      x: 42, y: 96,
+      tag: "Abbigliamento",
+      titolo: "Sandali alti",
+      testo: "Calza sandali piuttosto alti, allacciati alla caviglia: dettaglio realistico che la 'umanizza' rispetto all'iconografia divina a piedi nudi."
+    },
+    {
+      x: 50, y: 99,
+      tag: "Storia",
+      titolo: "Ritrovamento 1541",
+      testo: "Rinvenuta ad Arezzo nel 1541 presso la chiesa di San Lorenzo, dentro una domus romana del I sec. d.C. Subito acquisita da Cosimo I de' Medici, che la volle nello Studiolo di Calliope in Palazzo Vecchio. Da lì al MAF, dove la vedete oggi."
+    },
+  ];
+  // ============================================================
+
+  const wrap = document.getElementById("wrap");
+  const modalBg = document.getElementById("modalBg");
+  const modalNum = document.getElementById("modalNum");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalTag = document.getElementById("modalTag");
+  const modalText = document.getElementById("modalText");
+
+  HOTSPOTS.forEach((h, i) => {
+    const n = i + 1;
+    const dot = document.createElement("div");
+    dot.className = "hotspot";
+    dot.style.left = h.x + "%";
+    dot.style.top  = h.y + "%";
+    dot.textContent = n;
+    dot.title = h.titolo;
+    dot.addEventListener("click", () => openModal(n, h));
+    wrap.appendChild(dot);
+  });
+
+  function openModal(n, h) {
+    modalNum.textContent = n;
+    modalTitle.textContent = h.titolo;
+    modalTag.textContent = h.tag;
+    modalText.textContent = h.testo;
+    modalBg.classList.add("open");
+  }
+  function closeModal() { modalBg.classList.remove("open"); }
+
+  document.getElementById("modalClose").onclick = closeModal;
+  modalBg.addEventListener("click", e => { if (e.target === modalBg) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  // Toggle visibilità hotspot
+  const toggleDots = document.getElementById("toggleDots");
+  const toggleLabel = document.getElementById("toggleLabel");
+  toggleDots.addEventListener("change", () => {
+    wrap.classList.toggle("hidden-dots", !toggleDots.checked);
+    toggleLabel.textContent = toggleDots.checked ? "visibili" : "nascosti";
+  });
+
+  // ============================================================
+  // QUIZ
+  // ============================================================
+  const QUIZ = [
+    {
+      q: "In che anno fu ritrovata la Minerva di Arezzo?",
+      opts: ["1492", "1541", "1700", "1900"],
+      correct: 1
+    },
+    {
+      q: "Cos'è il 'gorgoneion' che porta sul petto?",
+      opts: [
+        "Un gioiello di famiglia",
+        "Il simbolo della città di Arezzo",
+        "La testa mozzata di Medusa",
+        "Una decorazione geometrica"
+      ],
+      correct: 2
+    },
+    {
+      q: "Perché il braccio destro è stato RIMOSSO durante il restauro 2000-2008?",
+      opts: [
+        "Era danneggiato dal tempo",
+        "Era stato inventato nel '700 senza prove storiche",
+        "Pesava troppo",
+        "Era di un'altra statua"
+      ],
+      correct: 1
+    },
+    {
+      q: "Quale dettaglio tecnico rende il volto particolarmente naturalistico?",
+      opts: [
+        "L'oro sui capelli",
+        "Le labbra e le ciglia in rame intarsiato",
+        "La policromia originale",
+        "Il marmo bianco degli occhi"
+      ],
+      correct: 1
+    },
+    {
+      q: "Le integrazioni chiare visibili sul panneggio sono fatte di…",
+      opts: [
+        "Bronzo dorato",
+        "Resina sintetica",
+        "Alluminio applicato con calamite (reversibile)",
+        "Marmo dipinto"
+      ],
+      correct: 2
+    }
+  ];
+
+  const quizCont = document.getElementById("quizContainer");
+  const quizResult = document.getElementById("quizResult");
+  QUIZ.forEach((item, i) => {
+    const div = document.createElement("div");
+    div.className = "quiz-q";
+    div.innerHTML = `<div class="q-text">${i+1}. ${item.q}</div>` +
+      item.opts.map((o, j) =>
+        `<label><input type="radio" name="q${i}" value="${j}">${o}</label>`
+      ).join("");
+    quizCont.appendChild(div);
+  });
+  const btn = document.createElement("button");
+  btn.className = "quiz-btn";
+  btn.textContent = "Verifica risposte";
+  btn.onclick = checkQuiz;
+  quizCont.appendChild(btn);
+
+  function checkQuiz() {
+    let score = 0;
+    QUIZ.forEach((item, i) => {
+      const labels = quizCont.querySelectorAll(`input[name="q${i}"]`);
+      labels.forEach((inp, j) => {
+        const lbl = inp.parentElement;
+        lbl.classList.remove("correct","wrong");
+        if (j === item.correct) lbl.classList.add("correct");
+        if (inp.checked && j !== item.correct) lbl.classList.add("wrong");
+      });
+      const sel = quizCont.querySelector(`input[name="q${i}"]:checked`);
+      if (sel && parseInt(sel.value) === item.correct) score++;
+    });
+    quizResult.className = "show";
+    quizResult.style.background = score === QUIZ.length ? "#d4edda" : "#fff3cd";
+    quizResult.style.color = "#1a3a5c";
+    quizResult.textContent = `Hai totalizzato ${score} su ${QUIZ.length}` +
+      (score === QUIZ.length ? " — perfetto! 🏛️" : " — riprova!");
+  }
+</script>
+
+</body>
+</html>
